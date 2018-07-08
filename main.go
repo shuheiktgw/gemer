@@ -1,16 +1,24 @@
 package main
 
-import "os"
+import (
+	"os"
+	"io"
+)
 
 const (
-	ExitCodeOK int = iota
+	ExitCodeOK    = iota
 	ExitCodeError
 )
 
 func main() {
-	os.Exit(Run(os.Args))
+	cli := &CLI{outStream: os.Stdout, errStream: os.Stderr}
+	os.Exit(cli.Run(os.Args))
 }
 
-func Run(args []string) int {
+type CLI struct {
+	outStream, errStream io.Writer
+}
+
+func (*CLI)Run(args []string) int {
 	return ExitCodeOK
 }
