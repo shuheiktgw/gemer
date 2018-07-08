@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"context"
+	"errors"
 
 	"golang.org/x/oauth2"
 	"github.com/google/go-github/github"
-	"errors"
 )
 
 // GitHubClient is a clint to interact with Github API
