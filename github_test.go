@@ -1,7 +1,14 @@
 package main
 
-import "testing"
+import (
+	"testing"
+	"os"
+)
 
-func TestNew(t *testing.T) {
+const TestRepo = "github-api-test"
 
+func testGitHubClient(t *testing.T)
+
+func TestNewGitHubClient(t *testing.T) GitHubClient {
+	token := os.Getenv()
 }
