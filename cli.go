@@ -4,6 +4,8 @@ import (
 	"io"
 )
 
+const EnvGitHubToken = "GITHUB_TOKEN"
+
 const (
 	ExitCodeOK    = iota
 	ExitCodeError

@@ -17,7 +17,7 @@ type GitHubClient struct {
 
 // NewGitHubClient creates and initializes a new GitHubClient
 func NewGitHubClient(owner, repo, token string) (*GitHubClient, error) {
-	if len(repo) == 0 {
+	if len(owner) == 0 {
 		return nil, errors.New("missing Github owner name")
 	}
 
