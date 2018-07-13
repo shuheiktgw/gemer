@@ -29,9 +29,9 @@ func TestNewGitHubClientFail(t *testing.T) {
 		{owner: "testOwner", repo: "testRepo", token: ""},
 	}
 
-	for _, tc := range cases {
+	for i, tc := range cases {
 		if _, err := NewGitHubClient(tc.owner, tc.repo, tc.token); err == nil {
-			t.Fatal("error is not supposed to be nil")
+			t.Fatalf("#%d NewGitHubClient: error is not supposed to be nil", i)
 		}
 	}
 }
@@ -42,12 +42,45 @@ func TestNewGitHubClientSuccess(t *testing.T) {
 	}
 }
 
-func TestGetVersion(t *testing.T) {
-	c := testGitHubClient(t)
+func TestGetVersionFail(t *testing.T) {
+	cases := []struct {
+		branch, path string
+	}{
+		{branch: "", path: ""},
+		{branch: "", path: fmt.Sprintf("lib/%s/version.rb", TestRepo)},
+		{branch: "develop", path: ""},
+		{branch: "unknown", path: "unknown"},
+		{branch: "unknown", path: fmt.Sprintf("lib/%s/version.rb", TestRepo)},
+		{branch: "develop", path: "unknown"},
+		{branch: "develop", path: "README.md"},
+	}
 
-	_, err := c.GetVersion("master", fmt.Sprintf("lib/%s/version.rb", TestRepo))
+	for i, tc := range cases {
+		c := testGitHubClient(t)
 
-	if err != nil {
-		t.Fatal("GetVersion failed: ", err)
+		_, err := c.GetVersion(tc.branch, tc.path)
+
+		if err == nil {
+			t.Fatalf("#%d GetVersion: error is not supposed to be nil", i)
+		}
+	}
+}
+
+func TestGetVersionSuccess(t *testing.T) {
+	cases := []struct {
+		branch, path string
+	}{
+		{branch: "master", path: fmt.Sprintf("lib/%s/version.rb", TestRepo)},
+		{branch: "develop", path: fmt.Sprintf("lib/%s/version.rb", TestRepo)},
+	}
+
+	for i, tc := range cases {
+		c := testGitHubClient(t)
+
+		_, err := c.GetVersion(tc.branch, tc.path)
+
+		if err != nil {
+			t.Fatalf("#%d GetVersion failed: %s", i, err)
+		}
 	}
 }
