@@ -2,13 +2,12 @@ package main
 
 import (
 	"context"
+	"net/http"
+	"strings"
 
 	"golang.org/x/oauth2"
 	"github.com/pkg/errors"
 	"github.com/google/go-github/github"
-	"net/http"
-	"fmt"
-	"strings"
 )
 
 // GitHubClient is a clint to interact with Github API
@@ -59,7 +58,9 @@ func (c *GitHubClient) GetVersion(branch, path string) (*github.RepositoryConten
 		return nil, errors.Errorf("invalid version file path: version file path must ends with version.rb: invalid path: %s", path)
 	}
 
-	file, _, res, err := c.Client.Repositories.GetContents(context.TODO(), c.Owner, c.Repo, path, nil)
+	opt := &github.RepositoryContentGetOptions{Ref: branch}
+
+	file, _, res, err := c.Client.Repositories.GetContents(context.TODO(), c.Owner, c.Repo, path, opt)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get version file")
