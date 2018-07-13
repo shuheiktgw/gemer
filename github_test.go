@@ -3,6 +3,7 @@ package main
 import (
 	"testing"
 	"os"
+	"fmt"
 )
 
 const (
@@ -41,16 +42,12 @@ func TestNewGitHubClientSuccess(t *testing.T) {
 	}
 }
 
-func TestGetLatestRef(t *testing.T) {
+func TestGetVersion(t *testing.T) {
 	c := testGitHubClient(t)
 
-	got, err := c.GetLatestRef("master")
+	_, err := c.GetVersion("master", fmt.Sprintf("lib/%s/version.rb", TestRepo))
 
 	if err != nil {
-		t.Fatal("GetLatestRef failed: ", err)
-	}
-
-	if *got.Ref != "refs/heads/master" {
-		t.Fatal("received unexpected ref: want: refs/heads/master, got: ", *got.Ref)
+		t.Fatal("GetVersion failed: ", err)
 	}
 }
