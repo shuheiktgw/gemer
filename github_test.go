@@ -106,6 +106,28 @@ func TestUpdateVersionSuccess(t *testing.T) {
 	}
 }
 
+func TestCreateNewBranchFail(t *testing.T) {
+	cases := []struct {
+		origin, new string
+	}{
+		{origin: "", new: "new"},
+		{origin: "unknown", new: "new"},
+		{origin: "develop", new: ""},
+		{origin: "develop", new: "develop"},
+	}
+
+	for i, tc := range cases {
+		c := testGitHubClient(t)
+
+		err := c.CreateNewBranch(tc.origin, tc.new)
+
+		if err == nil {
+			deleteBranch(t, c, tc.new)
+			t.Fatalf("#%d error is not supposed to be nil: %s", i, err)
+		}
+	}
+}
+
 func TestCreateNewBranchSuccess(t *testing.T) {
 	cases := []struct {
 		origin, new string
