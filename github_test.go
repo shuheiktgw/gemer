@@ -44,6 +44,48 @@ func TestNewGitHubClientSuccess(t *testing.T) {
 	}
 }
 
+func TestCreateNewBranchFail(t *testing.T) {
+	cases := []struct {
+		origin, new string
+	}{
+		{origin: "", new: "new"},
+		{origin: "unknown", new: "new"},
+		{origin: "develop", new: ""},
+		{origin: "develop", new: "develop"},
+	}
+
+	for i, tc := range cases {
+		c := testGitHubClient(t)
+
+		err := c.CreateNewBranch(tc.origin, tc.new)
+
+		if err == nil {
+			deleteLatestRef(t, c, tc.new)
+			t.Fatalf("#%d error is not supposed to be nil: %s", i, err)
+		}
+	}
+}
+
+func TestCreateNewBranchSuccess(t *testing.T) {
+	cases := []struct {
+		origin, new string
+	}{
+		{origin: "develop", new: "new"},
+	}
+
+	for i, tc := range cases {
+		c := testGitHubClient(t)
+
+		err := c.CreateNewBranch(tc.origin, tc.new)
+
+		if err != nil {
+			t.Fatalf("#%d CreateNewBranch failed: %s", i, err)
+		}
+
+		deleteLatestRef(t, c, tc.new)
+	}
+}
+
 func TestGetVersionFail(t *testing.T) {
 	cases := []struct {
 		branch, path string
@@ -87,7 +129,7 @@ func TestGetVersionSuccess(t *testing.T) {
 	}
 }
 
-// TODO: Move this test to integration tests folder
+// TODO: Move this test to integration tests folder and add error patterns tests
 func TestUpdateVersionSuccess(t *testing.T) {
 	cases := []struct {
 		path, message, sha, branch string
@@ -114,48 +156,6 @@ func TestUpdateVersionSuccess(t *testing.T) {
 		}
 
 		deleteLatestRef(t, c, "test")
-	}
-}
-
-func TestCreateNewBranchFail(t *testing.T) {
-	cases := []struct {
-		origin, new string
-	}{
-		{origin: "", new: "new"},
-		{origin: "unknown", new: "new"},
-		{origin: "develop", new: ""},
-		{origin: "develop", new: "develop"},
-	}
-
-	for i, tc := range cases {
-		c := testGitHubClient(t)
-
-		err := c.CreateNewBranch(tc.origin, tc.new)
-
-		if err == nil {
-			deleteLatestRef(t, c, tc.new)
-			t.Fatalf("#%d error is not supposed to be nil: %s", i, err)
-		}
-	}
-}
-
-func TestCreateNewBranchSuccess(t *testing.T) {
-	cases := []struct {
-		origin, new string
-	}{
-		{origin: "develop", new: "new"},
-	}
-
-	for i, tc := range cases {
-		c := testGitHubClient(t)
-
-		err := c.CreateNewBranch(tc.origin, tc.new)
-
-		if err != nil {
-			t.Fatalf("#%d CreateNewBranch failed: %s", i, err)
-		}
-
-		deleteLatestRef(t, c, tc.new)
 	}
 }
 
