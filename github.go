@@ -135,7 +135,7 @@ func (c *GitHubClient) UpdateVersion(path, message, sha, branch string, content 
 		return errors.Wrap(err, "failed to update version file")
 	}
 
-	if res.StatusCode != http.StatusCreated {
+	if res.StatusCode != http.StatusOK {
 		return errors.Errorf("create version: invalid status: %s", res.Status)
 	}
 

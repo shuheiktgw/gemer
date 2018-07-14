@@ -87,22 +87,33 @@ func TestGetVersionSuccess(t *testing.T) {
 	}
 }
 
+// TODO: Move this test to integration tests folder
 func TestUpdateVersionSuccess(t *testing.T) {
 	cases := []struct {
 		path, message, sha, branch string
 		content []byte
 	}{
-		{path: fmt.Sprintf("lib/%s/version.rb", TestRepo), message: "test", sha: "ea6e7457c75fc0b2db6dc3b41edb704d57fc6a5d", branch: "new", content: []byte("dGVzdA==")},
+		{path: fmt.Sprintf("lib/%s/version.rb", TestRepo), message: "Bumps up to 0.1.1", content: []byte("module GithubAPITest\n  VERSION = '0.1.1'\nend")},
 	}
 
 	for i, tc := range cases {
 		c := testGitHubClient(t)
 
-		err := c.UpdateVersion(tc.path, tc.message, tc.sha, tc.branch, tc.content)
+		if err := c.CreateNewBranch("develop", "test"); err != nil {
+			t.Fatalf("#%d CreateNewBranch failed: %s", i, err)
+		}
+
+		ref, err := c.GetVersion("test", tc.path)
 
 		if err != nil {
+			t.Fatalf("#%d GetVersion failed: %s", i, err)
+		}
+
+		if err := c.UpdateVersion(tc.path, tc.message, *ref.SHA, "test", tc.content); err != nil {
 			t.Fatalf("#%d UpdateVersion failed: %s", i, err)
 		}
+
+		deleteLatestRef(t, c, "test")
 	}
 }
 
@@ -122,7 +133,7 @@ func TestCreateNewBranchFail(t *testing.T) {
 		err := c.CreateNewBranch(tc.origin, tc.new)
 
 		if err == nil {
-			deleteBranch(t, c, tc.new)
+			deleteLatestRef(t, c, tc.new)
 			t.Fatalf("#%d error is not supposed to be nil: %s", i, err)
 		}
 	}
@@ -144,11 +155,11 @@ func TestCreateNewBranchSuccess(t *testing.T) {
 			t.Fatalf("#%d CreateNewBranch failed: %s", i, err)
 		}
 
-		deleteBranch(t, c, tc.new)
+		deleteLatestRef(t, c, tc.new)
 	}
 }
 
-func deleteBranch(t *testing.T, c *GitHubClient, branch string) {
+func deleteLatestRef(t *testing.T, c *GitHubClient, branch string) {
 	res, err := c.Client.Git.DeleteRef(context.TODO(), c.Owner, c.Repo, "heads/" + branch)
 
 	if err != nil {
