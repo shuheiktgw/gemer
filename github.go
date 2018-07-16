@@ -9,7 +9,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/google/go-github/github"
 	"encoding/base64"
-	"fmt"
 )
 
 // GitHubClient is a clint to interact with Github API

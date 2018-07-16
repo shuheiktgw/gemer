@@ -1,8 +1,6 @@
 package main
 
 import (
-	"io"
-
 	"github.com/pkg/errors"
 	"github.com/blang/semver"
 	"regexp"
@@ -14,8 +12,6 @@ var versionRegex = regexp.MustCompile(`VERSION\s*=\s*['"](\d+\.\d+\.\d+)['"]`)
 // Gemer wraps GithubClient and simplifies interactions with GitHub API
 type Gemer struct {
 	GitHubClient *GitHubClient
-
-	outStream io.Writer
 }
 
 // TODO: Enable to specify version from command line
