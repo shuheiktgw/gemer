@@ -102,7 +102,7 @@ func TestGetVersionFail(t *testing.T) {
 	for i, tc := range cases {
 		c := testGitHubClient(t)
 
-		_, err := c.GetVersion(tc.branch, tc.path)
+		_, _ , err := c.GetVersion(tc.branch, tc.path)
 
 		if err == nil {
 			t.Fatalf("#%d GetVersion: error is not supposed to be nil", i)
@@ -121,7 +121,7 @@ func TestGetVersionSuccess(t *testing.T) {
 	for i, tc := range cases {
 		c := testGitHubClient(t)
 
-		_, err := c.GetVersion(tc.branch, tc.path)
+		_, _, err := c.GetVersion(tc.branch, tc.path)
 
 		if err != nil {
 			t.Fatalf("#%d GetVersion failed: %s", i, err)
@@ -145,13 +145,13 @@ func TestUpdateVersionSuccess(t *testing.T) {
 			t.Fatalf("#%d CreateNewBranch failed: %s", i, err)
 		}
 
-		ref, err := c.GetVersion("test", tc.path)
+		_, sha, err := c.GetVersion("test", tc.path)
 
 		if err != nil {
 			t.Fatalf("#%d GetVersion failed: %s", i, err)
 		}
 
-		if err := c.UpdateVersion(tc.path, tc.message, *ref.SHA, "test", tc.content); err != nil {
+		if err := c.UpdateVersion(tc.path, tc.message, *sha, "test", tc.content); err != nil {
 			t.Fatalf("#%d UpdateVersion failed: %s", i, err)
 		}
 

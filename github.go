@@ -8,6 +8,8 @@ import (
 	"golang.org/x/oauth2"
 	"github.com/pkg/errors"
 	"github.com/google/go-github/github"
+	"encoding/base64"
+	"fmt"
 )
 
 // GitHubClient is a clint to interact with Github API
@@ -77,17 +79,17 @@ func (c *GitHubClient) CreateNewBranch(origin, new string) error {
 }
 
 // GetVersion gets the latest version.rb file
-func (c *GitHubClient) GetVersion(branch, path string) (*github.RepositoryContent, error) {
+func (c *GitHubClient) GetVersion(branch, path string) ([]byte, *string, error) {
 	if len(branch) == 0 {
-		return nil, errors.New("missing Github branch name")
+		return nil, nil, errors.New("missing Github branch name")
 	}
 
 	if len(path) == 0 {
-		return nil, errors.New("missing Github version.rb path")
+		return nil, nil, errors.New("missing Github version.rb path")
 	}
 
 	if !strings.HasSuffix(path, "version.rb") {
-		return nil, errors.Errorf("invalid version file path: version file path must ends with version.rb: invalid path: %s", path)
+		return nil, nil, errors.Errorf("invalid version file path: version file path must ends with version.rb: invalid path: %s", path)
 	}
 
 	opt := &github.RepositoryContentGetOptions{Ref: branch}
@@ -95,14 +97,24 @@ func (c *GitHubClient) GetVersion(branch, path string) (*github.RepositoryConten
 	file, _, res, err := c.Client.Repositories.GetContents(context.TODO(), c.Owner, c.Repo, path, opt)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get version file")
+		return nil, nil, errors.Wrap(err, "failed to get version file")
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("get version: invalid status: %s", res.Status)
+		return nil, nil, errors.Errorf("get version: invalid status: %s", res.Status)
 	}
 
-	return file, nil
+	if *file.Encoding != "base64" {
+		return nil, nil, errors.Errorf("unexpected encoding: %s", *file.Encoding)
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(*file.Content)
+
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "error occurred while decoding version.rb file")
+	}
+
+	return decoded, file.SHA, nil
 }
 
 func (c *GitHubClient) UpdateVersion(path, message, sha, branch string, content []byte) error {
@@ -126,7 +138,6 @@ func (c *GitHubClient) UpdateVersion(path, message, sha, branch string, content 
 		return errors.New("missing Github branch name")
 	}
 
-	// ea6e7457c75fc0b2db6dc3b41edb704d57fc6a5d
 	opt := &github.RepositoryContentFileOptions{Message: &message, Content: content, SHA: &sha, Branch: &branch}
 
 	_, res, err := c.Client.Repositories.UpdateFile(context.TODO(), c.Owner, c.Repo, path, opt)
