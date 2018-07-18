@@ -183,3 +183,22 @@ func (c *GitHubClient) CreatePullRequest(title, head, base, body string) error {
 
 	return nil
 }
+
+// DeleteLatestRef deletes the latest Ref of the given branch, intended to be used for rollbacks
+func (c *GitHubClient) DeleteLatestRef(branch string) error {
+	if len(branch) == 0 {
+		return errors.New("missing Github branch name")
+	}
+
+	res, err := c.Client.Git.DeleteRef(context.TODO(), c.Owner, c.Repo, "heads/" + branch)
+
+	if err != nil {
+		return errors.Wrapf(err, "failed to delete the latest ref of a branch name %s: %s", branch, err)
+	}
+
+	if res.StatusCode != http.StatusNoContent {
+		return errors.Errorf("delete latest ref: invalid status: %s", res.Status)
+	}
+
+	return nil
+}

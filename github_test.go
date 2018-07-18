@@ -60,7 +60,12 @@ func TestCreateNewBranchFail(t *testing.T) {
 		err := c.CreateNewBranch(tc.origin, tc.new)
 
 		if err == nil {
-			deleteLatestRef(t, c, tc.new)
+			err = c.DeleteLatestRef(tc.new)
+
+			if err != nil {
+				t.Fatalf("#d DeleteLatestRef failed: %s", err)
+			}
+
 			t.Fatalf("#%d error is not supposed to be nil: %s", i, err)
 		}
 	}
@@ -82,7 +87,11 @@ func TestCreateNewBranchSuccess(t *testing.T) {
 			t.Fatalf("#%d CreateNewBranch failed: %s", i, err)
 		}
 
-		deleteLatestRef(t, c, tc.new)
+		err = c.DeleteLatestRef(tc.new)
+
+		if err != nil {
+			t.Fatalf("#d DeleteLatestRef failed: %s", err)
+		}
 	}
 }
 
@@ -155,18 +164,10 @@ func TestUpdateVersionSuccess(t *testing.T) {
 			t.Fatalf("#%d UpdateVersion failed: %s", i, err)
 		}
 
-		deleteLatestRef(t, c, "test")
-	}
-}
+		err = c.DeleteLatestRef("test")
 
-func deleteLatestRef(t *testing.T, c *GitHubClient, branch string) {
-	res, err := c.Client.Git.DeleteRef(context.TODO(), c.Owner, c.Repo, "heads/" + branch)
-
-	if err != nil {
-		t.Fatalf("error occurred while deleting a newly created branch: error: %s", err)
-	}
-
-	if res.StatusCode != http.StatusNoContent {
-		t.Fatalf("invalid http status: %s", res.StatusCode)
+		if err != nil {
+			t.Fatalf("#d DeleteLatestRef failed: %s", err)
+		}
 	}
 }
