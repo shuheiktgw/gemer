@@ -155,21 +155,21 @@ func (c *GitHubClient) UpdateVersion(path, message, sha, branch string, content 
 
 // TODO Enable to add custom labels to PR
 // CreatePullRequest creates a new pull request
-func (c *GitHubClient) CreatePullRequest(title, head, base, body string) (*int, error) {
+func (c *GitHubClient) CreatePullRequest(title, head, base, body string) (int, error) {
 	if len(title) == 0 {
-		return nil, errors.New("missing Github Pull Request title")
+		return 0, errors.New("missing Github Pull Request title")
 	}
 
 	if len(head) == 0 {
-		return nil, errors.New("missing Github Pull Request head branch")
+		return 0, errors.New("missing Github Pull Request head branch")
 	}
 
 	if len(base) == 0 {
-		return nil, errors.New("missing Github Pull Request base branch")
+		return 0, errors.New("missing Github Pull Request base branch")
 	}
 
 	if len(body) == 0 {
-		return nil, errors.New("missing Github Pull Request body")
+		return 0, errors.New("missing Github Pull Request body")
 	}
 
 	opt := &github.NewPullRequest{Title: &title, Head: &head, Base: &base, Body: &body}
@@ -177,14 +177,14 @@ func (c *GitHubClient) CreatePullRequest(title, head, base, body string) (*int, 
 	pr, res, err := c.Client.PullRequests.Create(context.TODO(), c.Owner, c.Repo, opt)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create a new pull request")
+		return 0, errors.Wrap(err, "failed to create a new pull request")
 	}
 
 	if res.StatusCode != http.StatusCreated {
-		return nil, errors.Errorf("create pull request: invalid status: %s", res.Status)
+		return 0, errors.Errorf("create pull request: invalid status: %s", res.Status)
 	}
 
-	return pr.Number, nil
+	return *pr.Number, nil
 }
 
 // ClosePullRequest closes a Pull Request with a give Pull Request number
