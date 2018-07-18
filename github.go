@@ -116,6 +116,7 @@ func (c *GitHubClient) GetVersion(branch, path string) ([]byte, *string, error) 
 	return decoded, file.SHA, nil
 }
 
+// UpdateVersion updates a version.rb file with a given content
 func (c *GitHubClient) UpdateVersion(path, message, sha, branch string, content []byte) error {
 	if len(path) == 0 {
 		return errors.New("missing Github version.rb path")
@@ -152,6 +153,7 @@ func (c *GitHubClient) UpdateVersion(path, message, sha, branch string, content 
 	return nil
 }
 
+// CreatePullRequest creates a new pull request
 func (c *GitHubClient) CreatePullRequest(title, head, base, body string) error {
 	if len(title) == 0 {
 		return errors.New("missing Github Pull Request title")
