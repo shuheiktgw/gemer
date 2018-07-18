@@ -154,36 +154,36 @@ func (c *GitHubClient) UpdateVersion(path, message, sha, branch string, content 
 }
 
 // CreatePullRequest creates a new pull request
-func (c *GitHubClient) CreatePullRequest(title, head, base, body string) error {
+func (c *GitHubClient) CreatePullRequest(title, head, base, body string) (*int, error) {
 	if len(title) == 0 {
-		return errors.New("missing Github Pull Request title")
+		return nil, errors.New("missing Github Pull Request title")
 	}
 
 	if len(head) == 0 {
-		return errors.New("missing Github Pull Request head branch")
+		return nil, errors.New("missing Github Pull Request head branch")
 	}
 
 	if len(base) == 0 {
-		return errors.New("missing Github Pull Request base branch")
+		return nil, errors.New("missing Github Pull Request base branch")
 	}
 
 	if len(body) == 0 {
-		return errors.New("missing Github Pull Request body")
+		return nil, errors.New("missing Github Pull Request body")
 	}
 
 	opt := &github.NewPullRequest{Title: &title, Head: &head, Base: &base, Body: &body}
 
-	_, res, err := c.Client.PullRequests.Create(context.TODO(), c.Owner, c.Repo, opt)
+	pr, res, err := c.Client.PullRequests.Create(context.TODO(), c.Owner, c.Repo, opt)
 
 	if err != nil {
-		return errors.Wrap(err, "failed to create a new pull request")
+		return nil, errors.Wrap(err, "failed to create a new pull request")
 	}
 
 	if res.StatusCode != http.StatusCreated {
-		return errors.Errorf("create pull request: invalid status: %s", res.Status)
+		return nil, errors.Errorf("create pull request: invalid status: %s", res.Status)
 	}
 
-	return nil
+	return pr.Number, nil
 }
 
 // DeleteLatestRef deletes the latest Ref of the given branch, intended to be used for rollbacks
