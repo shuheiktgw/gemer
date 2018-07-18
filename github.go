@@ -153,6 +153,7 @@ func (c *GitHubClient) UpdateVersion(path, message, sha, branch string, content 
 	return nil
 }
 
+// TODO Enable to add custom labels to PR
 // CreatePullRequest creates a new pull request
 func (c *GitHubClient) CreatePullRequest(title, head, base, body string) (*int, error) {
 	if len(title) == 0 {
@@ -184,6 +185,23 @@ func (c *GitHubClient) CreatePullRequest(title, head, base, body string) (*int, 
 	}
 
 	return pr.Number, nil
+}
+
+// ClosePullRequest closes a Pull Request with a give Pull Request number
+func (c *GitHubClient) ClosePullRequest(number int) error {
+	opt := &github.PullRequest{State: github.String("close")}
+
+	_, res, err := c.Client.PullRequests.Edit(context.TODO(), c.Owner, c.Repo, number, opt)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to close a pull request")
+	}
+
+	if res.StatusCode != http.StatusNoContent {
+		return errors.Errorf("create pull request: invalid status: %s", res.Status)
+	}
+
+	return nil
 }
 
 // DeleteLatestRef deletes the latest Ref of the given branch, intended to be used for rollbacks
