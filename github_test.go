@@ -174,12 +174,13 @@ func TestCreatePullRequestFail(t *testing.T) {
 	cases := []struct {
 		title, head, base, body string
 	}{
-		{title: "", head: "develop", base: "master", body: "PR!"},
+		{title: "", head: "pr-test", base: "master", body: "PR!"},
 		{title: "test pr", head: "", base: "master", body: "PR!"},
-		{title: "test pr", head: "develop", base: "", body: "PR!"},
-		{title: "test pr", head: "develop", base: "master", body: ""},
+		{title: "test pr", head: "pr-test", base: "", body: "PR!"},
+		{title: "test pr", head: "pr-test", base: "master", body: ""},
 		{title: "test pr", head: "unknown", base: "master", body: "PR!"},
-		{title: "test pr", head: "develop", base: "unknown", body: "PR!"},
+		{title: "test pr", head: "pr-test", base: "unknown", body: "PR!"},
+		{title: "test pr", head: "pr-test", base: "pr-test", body: "PR!"},
 	}
 
 	for i, tc := range cases {
@@ -190,6 +191,29 @@ func TestCreatePullRequestFail(t *testing.T) {
 				t.Errorf("%d ClosePullRequest failed: might need to close a PR manually: %s", i, e)
 			}
 			t.Fatalf("#%d CreatePullRequest is supposed to fail", i)
+		}
+	}
+}
+
+// TODO: Move this test to integration tests folder
+func TestCreatePullRequestSuccess(t *testing.T) {
+	cases := []struct {
+		title, head, base, body string
+	}{
+		{title: "Test PR from develop to master", head: "pr-test", base: "master", body: "This is a test!"},
+	}
+
+	for i, tc := range cases {
+		c := testGitHubClient(t)
+
+		n, err := c.CreatePullRequest(tc.title, tc.head, tc.base, tc.body)
+
+		if err != nil {
+			t.Fatalf("#%d CreatePullRequest failed: %s", i, err)
+		}
+
+		if e := c.ClosePullRequest(n); e != nil {
+			t.Errorf("%d ClosePullRequest failed: might need to close a PR manually: %s", i, e)
 		}
 	}
 }
