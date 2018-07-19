@@ -78,17 +78,17 @@ func (c *GitHubClient) CreateNewBranch(origin, new string) error {
 }
 
 // GetVersion gets the latest version.rb file
-func (c *GitHubClient) GetVersion(branch, path string) ([]byte, *string, error) {
+func (c *GitHubClient) GetVersion(branch, path string) (string, string, error) {
 	if len(branch) == 0 {
-		return nil, nil, errors.New("missing Github branch name")
+		return "", "", errors.New("missing Github branch name")
 	}
 
 	if len(path) == 0 {
-		return nil, nil, errors.New("missing Github version.rb path")
+		return "", "", errors.New("missing Github version.rb path")
 	}
 
 	if !strings.HasSuffix(path, "version.rb") {
-		return nil, nil, errors.Errorf("invalid version file path: version file path must ends with version.rb: invalid path: %s", path)
+		return "", "", errors.Errorf("invalid version file path: version file path must ends with version.rb: invalid path: %s", path)
 	}
 
 	opt := &github.RepositoryContentGetOptions{Ref: branch}
@@ -96,24 +96,24 @@ func (c *GitHubClient) GetVersion(branch, path string) ([]byte, *string, error) 
 	file, _, res, err := c.Client.Repositories.GetContents(context.TODO(), c.Owner, c.Repo, path, opt)
 
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to get version file")
+		return "", "", errors.Wrap(err, "failed to get version file")
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return nil, nil, errors.Errorf("get version: invalid status: %s", res.Status)
+		return "", "", errors.Errorf("get version: invalid status: %s", res.Status)
 	}
 
 	if *file.Encoding != "base64" {
-		return nil, nil, errors.Errorf("unexpected encoding: %s", *file.Encoding)
+		return "", "", errors.Errorf("unexpected encoding: %s", *file.Encoding)
 	}
 
 	decoded, err := base64.StdEncoding.DecodeString(*file.Content)
 
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "error occurred while decoding version.rb file")
+		return "", "", errors.Wrap(err, "error occurred while decoding version.rb file")
 	}
 
-	return decoded, file.SHA, nil
+	return string(decoded), *file.SHA, nil
 }
 
 // UpdateVersion updates a version.rb file with a given content

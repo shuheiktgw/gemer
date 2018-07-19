@@ -158,7 +158,7 @@ func TestUpdateVersionSuccess(t *testing.T) {
 			t.Fatalf("#%d GetVersion failed: %s", i, err)
 		}
 
-		if err := c.UpdateVersion(tc.path, tc.message, *sha, "test", tc.content); err != nil {
+		if err := c.UpdateVersion(tc.path, tc.message, sha, "test", tc.content); err != nil {
 			t.Fatalf("#%d UpdateVersion failed: %s", i, err)
 		}
 

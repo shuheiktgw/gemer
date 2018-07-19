@@ -30,9 +30,7 @@ func (g *Gemer) UpdateVersion(branch, path string) error {
 		return err
 	}
 
-	sc := string(content)
-
-	currentV := extractVersion(sc)
+	currentV := extractVersion(content)
 
 	if len(currentV) == 0 {
 		return errors.Errorf("failed to extract version from version.rb: version.rb content: %s", sc)
@@ -52,9 +50,9 @@ func (g *Gemer) UpdateVersion(branch, path string) error {
 		return err
 	}
 
-	newContent := strings.Replace(sc, currentV, nextV, 1)
+	newContent := strings.Replace(content, currentV, nextV, 1)
 
-	return g.GitHubClient.UpdateVersion(path, "Bumps up to " + nextV, *sha, newBranchName, []byte(newContent))
+	return g.GitHubClient.UpdateVersion(path, "Bumps up to " + nextV, sha, newBranchName, []byte(newContent))
 }
 
 func extractVersion(c string) string {
