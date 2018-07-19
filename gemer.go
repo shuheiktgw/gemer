@@ -15,31 +15,32 @@ type Gemer struct {
 }
 
 // TODO: Enable to specify version from command line
-func (g *Gemer) UpdateVersion(branch, path string) error {
+// TODO: Might want to return struct instead of simple strings
+func (g *Gemer) UpdateVersion(branch, path string) (string, int, error) {
 	if len(branch) == 0 {
-		return errors.New("missing Github branch name")
+		return "", 0, errors.New("missing Github branch name")
 	}
 
 	if len(path) == 0 {
-		return errors.New("missing Github version.rb path")
+		return "", 0, errors.New("missing Github version.rb path")
 	}
 
 	content, sha, err := g.GitHubClient.GetVersion(branch, path)
 
 	if err != nil {
-		return err
+		return "", 0, err
 	}
 
 	currentV := extractVersion(content)
 
 	if len(currentV) == 0 {
-		return errors.Errorf("failed to extract version from version.rb: version.rb content: %s", sc)
+		return "", 0, errors.Errorf("failed to extract version from version.rb: version.rb content: %s", content)
 	}
 
 	nextV, err := convertToNext(currentV)
 
 	if err != nil {
-		return err
+		return "", 0, err
 	}
 
 	newBranchName := "bumps_up_to_" + nextV
@@ -47,12 +48,21 @@ func (g *Gemer) UpdateVersion(branch, path string) error {
 	err = g.GitHubClient.CreateNewBranch(branch, newBranchName)
 
 	if err != nil {
-		return err
+		return "", 0, err
 	}
 
 	newContent := strings.Replace(content, currentV, nextV, 1)
+	message := "Bumps up to " + nextV
 
-	return g.GitHubClient.UpdateVersion(path, "Bumps up to " + nextV, sha, newBranchName, []byte(newContent))
+	err = g.GitHubClient.UpdateVersion(path, message, sha, newBranchName, []byte(newContent))
+
+	if err != nil {
+		return newBranchName, 0, err
+	}
+
+	prNum, err := g.GitHubClient.CreatePullRequest(message, newBranchName, branch, message)
+
+	return newBranchName, prNum, err
 }
 
 func extractVersion(c string) string {
