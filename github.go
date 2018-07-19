@@ -197,7 +197,7 @@ func (c *GitHubClient) ClosePullRequest(number int) error {
 		return errors.Wrap(err, "failed to close a pull request")
 	}
 
-	if res.StatusCode != http.StatusNoContent {
+	if res.StatusCode != http.StatusOK {
 		return errors.Errorf("create pull request: invalid status: %s", res.Status)
 	}
 
