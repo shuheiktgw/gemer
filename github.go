@@ -204,6 +204,45 @@ func (c *GitHubClient) ClosePullRequest(number int) error {
 	return nil
 }
 
+// CreateRelease creates a new release
+func (c *GitHubClient) CreateRelease(tagName, targetCommitish, name, body string) (int64, error) {
+	if len(tagName) == 0 {
+		return 0, errors.New("missing Github Release Tag Name")
+	}
+
+	if len(targetCommitish) == 0 {
+		return 0, errors.New("missing Github Release Target Commitish")
+	}
+
+	if len(name) == 0 {
+		return 0, errors.New("missing Github Release Name")
+	}
+
+	if len(body) == 0 {
+		return 0, errors.New("missing Github Release body")
+	}
+
+	opt := &github.RepositoryRelease{
+		TagName: &tagName,
+		TargetCommitish: &targetCommitish,
+		Name: &name,
+		Body: &body,
+		Draft: github.Bool(true),
+		}
+
+	rr, res, err := c.Client.Repositories.CreateRelease(context.TODO(), c.Owner, c.Repo, opt)
+
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create a new release")
+	}
+
+	if res.StatusCode != http.StatusCreated {
+		return 0, errors.Errorf("create release: invalid status: %s", res.Status)
+	}
+
+	return *rr.ID, nil
+}
+
 // DeleteLatestRef deletes the latest Ref of the given branch, intended to be used for rollbacks
 func (c *GitHubClient) DeleteLatestRef(branch string) error {
 	if len(branch) == 0 {
