@@ -193,3 +193,11 @@ func TestCreatePullRequestFail(t *testing.T) {
 		}
 	}
 }
+
+func TestClosePullRequestFail(t *testing.T) {
+	c := testGitHubClient(t)
+
+	if err := c.ClosePullRequest(0); err == nil {
+		t.Fatalf("ClosePullRequest is supposed to fail")
+	}
+}
