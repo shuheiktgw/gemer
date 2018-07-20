@@ -225,3 +225,41 @@ func TestClosePullRequestFail(t *testing.T) {
 		t.Fatalf("ClosePullRequest is supposed to fail")
 	}
 }
+
+func TestCreateReleaseFail(t *testing.T) {
+	cases := []struct {
+		tagName, targetCommitish, name, body string
+	}{
+		{tagName: "", targetCommitish: "pr-test", name: "Release v0.0.1", body: "v0.0.1 released!"},
+		{tagName: "v0.0.1", targetCommitish: "", name: "Release v0.0.1", body: "v0.0.1 released!"},
+		{tagName: "v0.0.1", targetCommitish: "pr-test", name: "", body: "v0.0.1 released!"},
+		{tagName: "v0.0.1", targetCommitish: "pr-test", name: "Release v0.0.1", body: ""},
+		{tagName: "v0.0.1", targetCommitish: "unknown", name: "Release v0.0.1", body: "v0.0.1 released!"},
+	}
+
+	for i, tc := range cases {
+		c := testGitHubClient(t)
+
+		if _, err := c.CreateRelease(tc.tagName, tc.targetCommitish, tc.name, tc.body); err == nil {
+			t.Fatalf("#%d CreateRelease is supposed to fail", i)
+		}
+	}
+}
+
+func TestCreateReleaseSuccess(t *testing.T) {
+	cases := []struct {
+		tagName, targetCommitish, name, body string
+	}{
+		{tagName: "v0.0.1", targetCommitish: "pr-test", name: "Release v0.0.1", body: "v0.0.1 released!"},
+	}
+
+	for i, tc := range cases {
+		c := testGitHubClient(t)
+
+		_, err := c.CreateRelease(tc.tagName, tc.targetCommitish, tc.name, tc.body)
+
+		if err != nil {
+			t.Fatalf("#%d CreateRelease failed: %s", i, err)
+		}
+	}
+}
