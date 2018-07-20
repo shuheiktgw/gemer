@@ -256,10 +256,14 @@ func TestCreateReleaseSuccess(t *testing.T) {
 	for i, tc := range cases {
 		c := testGitHubClient(t)
 
-		_, err := c.CreateRelease(tc.tagName, tc.targetCommitish, tc.name, tc.body)
+		id, err := c.CreateRelease(tc.tagName, tc.targetCommitish, tc.name, tc.body)
 
 		if err != nil {
 			t.Fatalf("#%d CreateRelease failed: %s", i, err)
+		}
+
+		if e := c.DeleteRelease(id); e != nil {
+			t.Errorf("%d DeleteRelease failed: might need to delete a Release manually: %s", i, e)
 		}
 	}
 }

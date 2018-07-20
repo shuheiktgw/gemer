@@ -243,6 +243,21 @@ func (c *GitHubClient) CreateRelease(tagName, targetCommitish, name, body string
 	return *rr.ID, nil
 }
 
+// DeleteRelease deletes a release
+func (c *GitHubClient) DeleteRelease(id int64) (error) {
+	res, err := c.Client.Repositories.DeleteRelease(context.TODO(), c.Owner, c.Repo, id)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to create a new release")
+	}
+
+	if res.StatusCode != http.StatusNoContent {
+		return errors.Errorf("create release: invalid status: %s", res.Status)
+	}
+
+	return nil
+}
+
 // DeleteLatestRef deletes the latest Ref of the given branch, intended to be used for rollbacks
 func (c *GitHubClient) DeleteLatestRef(branch string) error {
 	if len(branch) == 0 {
