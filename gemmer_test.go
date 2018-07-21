@@ -20,7 +20,11 @@ func TestGemerUpdateVersionSuccess(t *testing.T) {
 	for i, tc := range cases {
 		g := testGemmer(t)
 
-		err := g.UpdateVersion(tc.branch, tc.path)
+		branchName, prNum, releaseID, err := g.UpdateVersion(tc.branch, tc.path)
+
+		if e := g.rollbackUpdateVersion(nil, branchName, prNum, releaseID); e != nil {
+			t.Errorf("#%d error occurred while rolling back: %s", i, e)
+		}
 
 		if err != nil {
 			t.Fatalf("#%d error occurred while updating version: %s", i, err)
