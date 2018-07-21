@@ -31,3 +31,24 @@ func TestGemerUpdateVersionSuccess(t *testing.T) {
 		}
 	}
 }
+
+func TestGemerUpdateVersionFail(t *testing.T) {
+	cases := []struct {
+		branch, path string
+	}{
+		{branch: "", path: fmt.Sprintf("lib/%s/version.rb", TestRepo)},
+		{branch: "develop", path: ""},
+		{branch: "unknown", path: fmt.Sprintf("lib/%s/version.rb", TestRepo)},
+		{branch: "develop", path: "unknown/version.rb"},
+	}
+
+	for i, tc := range cases {
+		g := testGemmer(t)
+
+		_, _, _, err := g.UpdateVersion(tc.branch, tc.path)
+
+		if err == nil {
+			t.Fatalf("#%d error is not supposed to be nil", i)
+		}
+	}
+}
