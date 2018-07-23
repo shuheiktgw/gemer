@@ -258,6 +258,29 @@ func (c *GitHubClient) DeleteRelease(id int64) (error) {
 	return nil
 }
 
+// CompareCommits compares and gets diffs between two commits
+func (c *GitHubClient) CompareCommits(base, head string) ([]github.RepositoryCommit, error) {
+	if len(base) == 0 {
+		return nil, errors.New("missing GitHub base commit")
+	}
+
+	if len(head) == 0 {
+		return nil, errors.New("missing GitHub head commit")
+	}
+
+	cc, res, err := c.Client.Repositories.CompareCommits(context.TODO(), c.Owner, c.Repo, base, head)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("compare commits: invalid status: %s", res.Status)
+	}
+
+	return cc.Commits, nil
+}
+
 // DeleteLatestRef deletes the latest Ref of the given branch, intended to be used for rollbacks
 func (c *GitHubClient) DeleteLatestRef(branch string) error {
 	if len(branch) == 0 {

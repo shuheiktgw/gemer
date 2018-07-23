@@ -267,3 +267,45 @@ func TestCreateReleaseSuccess(t *testing.T) {
 		}
 	}
 }
+
+func TestCompareCommitsFail(t *testing.T) {
+	cases := []struct {
+		base, head string
+	}{
+		{head: "", base: "master"},
+		{head: "master", base: ""},
+		{head: "unknown", base: "master"},
+		{head: "master", base: "unknown"},
+	}
+
+	for i, tc := range cases {
+		c := testGitHubClient(t)
+
+		_, err := c.CompareCommits(tc.head, tc.base)
+
+		if err == nil {
+			t.Fatalf("#%d CompareCommits is supposed to fail", i)
+		}
+	}
+}
+
+func TestCompareCommitsSuccess(t *testing.T) {
+	cases := []struct {
+		base, head string
+	}{
+		{head: "develop", base: "master"},
+		{head: "master", base: "develop"},
+		{head: "pr-test", base: "master"},
+		{head: "master", base: "pr-test"},
+	}
+
+	for i, tc := range cases {
+		c := testGitHubClient(t)
+
+		_, err := c.CompareCommits(tc.head, tc.base)
+
+		if err != nil {
+			t.Fatalf("#%d CompareCommits failed: %s", i, err)
+		}
+	}
+}
