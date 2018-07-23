@@ -309,3 +309,12 @@ func TestCompareCommitsSuccess(t *testing.T) {
 		}
 	}
 }
+
+func TestComparedCommitString(t *testing.T) {
+	cc := &ComparedCommit{Author: "shuheiktgw", Message: "The Best Commit Ever!", HTMLURL: "https://github.com/shuheiktgw/github-api-test/commit/d6ed804c9bbaefef1832702db562a3b1e98e1291"}
+	want := "@shuheiktgw [The Best Commit Ever!](https://github.com/shuheiktgw/github-api-test/commit/d6ed804c9bbaefef1832702db562a3b1e98e1291)"
+
+	if cc.String() != want {
+		t.Fatalf("invalid string: want: %s got: %s", want, cc.String())
+	}
+}

@@ -9,12 +9,18 @@ import (
 	"github.com/pkg/errors"
 	"github.com/google/go-github/github"
 	"encoding/base64"
+	"fmt"
 )
 
 // GitHubClient is a clint to interact with Github API
 type GitHubClient struct {
 	Owner, Repo string
 	Client *github.Client
+}
+
+// GitHubClient is a clint to interact with Github API
+type ComparedCommit struct {
+	Author, Message, HTMLURL string
 }
 
 // NewGitHubClient creates and initializes a new GitHubClient
@@ -259,7 +265,7 @@ func (c *GitHubClient) DeleteRelease(id int64) (error) {
 }
 
 // CompareCommits compares and gets diffs between two commits
-func (c *GitHubClient) CompareCommits(base, head string) ([]github.RepositoryCommit, error) {
+func (c *GitHubClient) CompareCommits(base, head string) ([]*ComparedCommit, error) {
 	if len(base) == 0 {
 		return nil, errors.New("missing GitHub base commit")
 	}
@@ -278,7 +284,13 @@ func (c *GitHubClient) CompareCommits(base, head string) ([]github.RepositoryCom
 		return nil, errors.Errorf("compare commits: invalid status: %s", res.Status)
 	}
 
-	return cc.Commits, nil
+	var ccs []*ComparedCommit
+
+	for _, c := range cc.Commits {
+		ccs = append(ccs, &ComparedCommit{Author: *c.Author.Login, Message: *c.Commit.Message, HTMLURL: *c.HTMLURL})
+	}
+
+	return ccs, nil
 }
 
 // DeleteLatestRef deletes the latest Ref of the given branch, intended to be used for rollbacks
@@ -298,4 +310,8 @@ func (c *GitHubClient) DeleteLatestRef(branch string) error {
 	}
 
 	return nil
+}
+
+func (cc *ComparedCommit) String() string {
+	return fmt.Sprintf("@%s [%s](%s)", cc.Author, cc.Message, cc.HTMLURL)
 }
