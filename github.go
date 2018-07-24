@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"net/http"
 	"strings"
 
-	"golang.org/x/oauth2"
-	"github.com/pkg/errors"
 	"github.com/google/go-github/github"
-	"encoding/base64"
+	"github.com/pkg/errors"
+	"golang.org/x/oauth2"
 	"fmt"
 )
 
@@ -18,9 +18,14 @@ type GitHubClient struct {
 	Client *github.Client
 }
 
-// GitHubClient is a clint to interact with Github API
+// ComparedCommit represents one commit and mainly used for formatting purpose
 type ComparedCommit struct {
 	Author, Message, HTMLURL string
+}
+
+// ComparedCommits represents a series of commits
+type ComparedCommits struct {
+	Commits []*ComparedCommit
 }
 
 // NewGitHubClient creates and initializes a new GitHubClient
@@ -265,7 +270,7 @@ func (c *GitHubClient) DeleteRelease(id int64) (error) {
 }
 
 // CompareCommits compares and gets diffs between two commits
-func (c *GitHubClient) CompareCommits(base, head string) ([]*ComparedCommit, error) {
+func (c *GitHubClient) CompareCommits(base, head string) (*ComparedCommits, error) {
 	if len(base) == 0 {
 		return nil, errors.New("missing GitHub base commit")
 	}
@@ -290,7 +295,7 @@ func (c *GitHubClient) CompareCommits(base, head string) ([]*ComparedCommit, err
 		ccs = append(ccs, &ComparedCommit{Author: *c.Author.Login, Message: *c.Commit.Message, HTMLURL: *c.HTMLURL})
 	}
 
-	return ccs, nil
+	return &ComparedCommits{Commits: ccs}, nil
 }
 
 // DeleteLatestRef deletes the latest Ref of the given branch, intended to be used for rollbacks
@@ -314,4 +319,20 @@ func (c *GitHubClient) DeleteLatestRef(branch string) error {
 
 func (cc *ComparedCommit) String() string {
 	return fmt.Sprintf("@%s [%s](%s)", cc.Author, cc.Message, cc.HTMLURL)
+}
+
+func (ccs *ComparedCommits) String() string {
+	var commits []byte
+	last := len(ccs.Commits) - 1
+
+	for i, c := range ccs.Commits {
+		if i == last {
+			commits = append(commits, c.String()...)
+			continue
+		}
+
+		commits = append(commits, c.String() + "\n"...)
+	}
+
+	return string(commits)
 }

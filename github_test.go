@@ -318,3 +318,19 @@ func TestComparedCommitString(t *testing.T) {
 		t.Fatalf("invalid string: want: %s got: %s", want, cc.String())
 	}
 }
+
+func TestComparedCommitsString(t *testing.T) {
+	cc1 := &ComparedCommit{Author: "shuheiktgw", Message: "The Best Commit Ever!", HTMLURL: "https://github.com/shuheiktgw/github-api-test/commit/d6ed804c9bbaefef1832702db562a3b1e98e1291"}
+	cc2 := &ComparedCommit{Author: "shuheiktgw", Message: "The Second Best Commit Ever!", HTMLURL: "https://github.com/shuheiktgw/github-api-test/commit/d6ed804c9bbaefef1832702db562a3b1e98e1291"}
+	cc3 := &ComparedCommit{Author: "shuheiktgw", Message: "The Third Best Commit Ever!", HTMLURL: "https://github.com/shuheiktgw/github-api-test/commit/d6ed804c9bbaefef1832702db562a3b1e98e1291"}
+
+	ccs := ComparedCommits{Commits: []*ComparedCommit{cc1, cc2, cc3}}
+
+	want := `@shuheiktgw [The Best Commit Ever!](https://github.com/shuheiktgw/github-api-test/commit/d6ed804c9bbaefef1832702db562a3b1e98e1291)
+@shuheiktgw [The Second Best Commit Ever!](https://github.com/shuheiktgw/github-api-test/commit/d6ed804c9bbaefef1832702db562a3b1e98e1291)
+@shuheiktgw [The Third Best Commit Ever!](https://github.com/shuheiktgw/github-api-test/commit/d6ed804c9bbaefef1832702db562a3b1e98e1291)`
+
+	if ccs.String() != want {
+		t.Fatalf("invalid string: want: %s got: %s", want, ccs.String())
+	}
+}
