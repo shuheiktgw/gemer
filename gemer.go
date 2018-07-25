@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/pkg/errors"
-	"github.com/blang/semver"
 	"regexp"
 	"strings"
+
+	"github.com/pkg/errors"
+	"github.com/blang/semver"
 )
 
 var versionRegex = regexp.MustCompile(`VERSION\s*=\s*['"](\d+\.\d+\.\d+)['"]`)
@@ -65,8 +66,16 @@ func (g *Gemer) UpdateVersion(branch, path string) (string, int, int64, error) {
 		return newBranchName, prNum, 0, g.rollbackUpdateVersion(err, newBranchName, prNum, 0)
 	}
 
+	currentTag := "v" + currentV
+	ccs, err := g.GitHubClient.CompareCommits(currentTag, newBranchName)
+
+	if err != nil {
+		return newBranchName, prNum, 0, g.rollbackUpdateVersion(err, newBranchName, prNum, 0)
+	}
+
 	nextTag := "v" + nextV
-	releaseID, err := g.GitHubClient.CreateRelease(nextTag, branch, "Release " + nextTag, nextTag + " is released!")
+	releaseBody := nextTag + "includes commits below!\n" + ccs.String()
+	releaseID, err := g.GitHubClient.CreateRelease(nextTag, branch, "Release " + nextTag, releaseBody)
 
 	if err != nil {
 		return newBranchName, prNum, releaseID, g.rollbackUpdateVersion(err, newBranchName, prNum, releaseID)
@@ -114,7 +123,7 @@ func convertToNext(current string) (string, error) {
 		return "", errors.Wrapf(err, "error occurred while parsing current version: current version: %s", current)
 	}
 
-	v.Patch += v.Patch + 1
+	v.Patch = v.Patch + 1
 
 	return v.String(), nil
 }
