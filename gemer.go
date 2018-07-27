@@ -16,6 +16,7 @@ type Gemer struct {
 }
 
 // TODO: Enable to specify version from command line
+// TODO: Enable to select Major, Minor, Patch
 func (g *Gemer) UpdateVersion(branch, path string) (string, int, int64, error) {
 	if len(branch) == 0 {
 		return "", 0, 0, errors.New("missing Github branch name")
