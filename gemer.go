@@ -8,6 +8,12 @@ import (
 	"github.com/blang/semver"
 )
 
+const (
+	MajorVersion = iota
+	MinorVersion
+	PatchVersion
+)
+
 var versionRegex = regexp.MustCompile(`VERSION\s*=\s*['"](\d+\.\d+\.\d+)['"]`)
 
 // Gemer wraps GithubClient and simplifies interactions with GitHub API
@@ -16,8 +22,7 @@ type Gemer struct {
 }
 
 // TODO: Enable to specify version from command line
-// TODO: Enable to select Major, Minor, Patch
-func (g *Gemer) UpdateVersion(branch, path string) (string, int, int64, error) {
+func (g *Gemer) UpdateVersion(branch, path string, version int) (string, int, int64, error) {
 	if len(branch) == 0 {
 		return "", 0, 0, errors.New("missing Github branch name")
 	}
@@ -38,7 +43,7 @@ func (g *Gemer) UpdateVersion(branch, path string) (string, int, int64, error) {
 		return "", 0, 0, errors.Errorf("failed to extract version from version.rb: version.rb content: %s", content)
 	}
 
-	nextV, err := convertToNext(currentV)
+	nextV, err := convertToNext(currentV, version)
 
 	if err != nil {
 		return "", 0, 0, err
@@ -117,14 +122,24 @@ func extractVersion(c string) string {
 	return m[1]
 }
 
-func convertToNext(current string) (string, error) {
+func convertToNext(current string, version int) (string, error) {
 	v, err := semver.New(current)
 
 	if err != nil {
 		return "", errors.Wrapf(err, "error occurred while parsing current version: current version: %s", current)
 	}
 
-	v.Patch = v.Patch + 1
+	if version == MajorVersion {
+		v.Major = v.Major + 1
+	}
+
+	if version == MinorVersion {
+		v.Minor = v.Minor + 1
+	}
+
+	if version == PatchVersion {
+		v.Patch = v.Patch + 1
+	}
 
 	return v.String(), nil
 }
