@@ -38,10 +38,10 @@
   version = "v0.8.0"
 
 [[projects]]
+  branch = "master"
   name = "github.com/tcnksm/go-latest"
   packages = ["."]
-  revision = "86500ab1363a867dafe16905b5b85293a0d838eb"
-  version = "0.1.1"
+  revision = "e3007ae9052ed85144087e7392e4c3fbc07962fa"
 
 [[projects]]
   branch = "master"
@@ -80,6 +80,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4bd5270955cfb80e7479a1b4601a11a20a59379702cba0f36dabc17bd0311740"
+  inputs-digest = "884a6943d8d563e0132a7be79f618f70671edf7c9af8e657b86f3ada1b96ddd2"
   solver-name = "gps-cdcl"
   solver-version = 1

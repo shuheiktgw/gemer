@@ -33,6 +33,10 @@
   branch = "master"
   name = "golang.org/x/oauth2"
 
+[[constraint]]
+  branch = "master"
+  name = "github.com/tcnksm/go-latest"
+
 [prune]
   go-tests = true
   unused-packages = true
