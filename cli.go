@@ -13,6 +13,7 @@ const (
 	ExitCodeOK    = iota
 	ExitCodeError
 	ExitCodeParseFlagsError
+	ExitCodeInvalidFlagError
 )
 
 type CLI struct {
@@ -55,7 +56,7 @@ func (cli *CLI)Run(args []string) int {
 
 	flags.BoolVar(&major, "major", false, "an option to increment major version")
 	flags.BoolVar(&minor, "minor", false, "an option to increment minor version")
-	flags.BoolVar(&patch, "patch", false, "an option to increment patch version")
+	flags.BoolVar(&patch, "patch", true, "an option to increment patch version")
 
 	if err := flags.Parse(args[1:]); err != nil {
 		return ExitCodeParseFlagsError
@@ -69,16 +70,19 @@ func (cli *CLI)Run(args []string) int {
 	if len(owner) == 0 {
 		fmt.Fprintf(cli.errStream, "Failed to set up gemer: GitHub username is missing\n" +
 			"Please set it via `-u` option\n\n")
+		return ExitCodeInvalidFlagError
 	}
 
 	if len(repo) == 0 {
 		fmt.Fprintf(cli.errStream, "Failed to set up gemer: GitHub repository nane is missing\n" +
 			"Please set it via `-r` option\n\n")
+		return ExitCodeInvalidFlagError
 	}
 
-	if len(branch) == 0 {
-		fmt.Fprintf(cli.errStream, "Failed to set up gemer: GitHub branch nane is missing\n" +
-			"Please set it via `-b` option\n\n")
+	if len(path) == 0 {
+		fmt.Fprintf(cli.errStream, "Failed to set up gemer: version.rb path is missing\n" +
+			"Please set it via `-p` option\n\n")
+		return ExitCodeInvalidFlagError
 	}
 
 	if len(token) == 0 {
@@ -86,6 +90,7 @@ func (cli *CLI)Run(args []string) int {
 			"Please set it via `%s` environment variable or `-t` option\n\n" +
 			"To create GitHub Personal Access token, see https://bit.ly/2rvbeT1\n",
 			EnvGitHubToken)
+		return ExitCodeInvalidFlagError
 	}
 
 	// The default is PatchVersion
@@ -107,14 +112,14 @@ func (cli *CLI)Run(args []string) int {
 
 	gemer := Gemer{GitHubClient: client}
 
-	_, prNum, releaseID, err := gemer.UpdateVersion(branch, path, ver)
+	result, err := gemer.UpdateVersion(branch, path, ver)
 	if err != nil {
 		fmt.Fprintf(cli.errStream, "Failed to update version: %s\n", err)
 		return ExitCodeError
 	}
 
-	prURL := fmt.Sprintf("https://github.com/%s/%s/pull/%d", owner, repo, prNum)
-	releaseURL := fmt.Sprintf("https://github.com/%s/%s/releases/%d", owner, repo, releaseID)
+	prURL := fmt.Sprintf("https://github.com/%s/%s/pull/%d", owner, repo, result.PrNumber)
+	releaseURL := fmt.Sprintf("https://github.com/%s/%s/releases/%d", owner, repo, result.ReleaseID)
 
 	fmt.Fprintf(cli.outStream, "Now, your gem is ready to release! Remaining tasks are ...\n\n" +
 		"1. Access %s and merge the PR\n" +
