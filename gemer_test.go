@@ -20,12 +20,12 @@ func TestGemerUpdateVersionSuccess(t *testing.T) {
 	for i, tc := range cases {
 		g := testGemmer(t)
 
-		branchName, prNum, releaseID, err := g.UpdateVersion(tc.branch, tc.path, PatchVersion)
+		result, err := g.UpdateVersion(tc.branch, tc.path, PatchVersion)
 
 		if err != nil {
 			t.Fatalf("#%d error occurred while updating version: %s", i, err)
 		} else {
-			if e := g.rollbackUpdateVersion(nil, branchName, prNum, releaseID); e != nil {
+			if e := g.rollbackUpdateVersion(nil, result); e != nil {
 				t.Errorf("#%d error occurred while rolling back: %s", i, e)
 			}
 		}
@@ -45,7 +45,7 @@ func TestGemerUpdateVersionFail(t *testing.T) {
 	for i, tc := range cases {
 		g := testGemmer(t)
 
-		_, _, _, err := g.UpdateVersion(tc.branch, tc.path, PatchVersion)
+		_, err := g.UpdateVersion(tc.branch, tc.path, PatchVersion)
 
 		if err == nil {
 			t.Fatalf("#%d error is not supposed to be nil", i)
