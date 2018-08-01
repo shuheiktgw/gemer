@@ -1,0 +1,10 @@
+language: go
+go:
+  - 1.8.x
+  - 1.9.x
+  - 1.10.x
+env:
+  global:
+    - secure: "OGBlSlHo9BN9eVbvGmcGeUG/mM1UPVbOgiUHohX/fmjUOPc8vFcJg3i8SsTWsZocU5YuN9raE11kWMo9d+oJfeO9knEz5KmdvWnYAjI/fN1WeeMk0kV7BK2DLJHzbtoHvBtfrtCofDg3IqYbgtDyAsPtwgvpKhOy6Zp7PPx1/+GuIGq0A8cozIjwrLGx2jQyU704rt9NUrPRnU1O0Z9CiA56QS4D2rO6aOueHSmYPOddJWP6tbc+OodFBM97lwbwGq0WUuRXDf/cn77KhGvU24Pf9rHZy/TsJSjkIKk+mAWX5pKBkgu0NSDftkgMsdFqXB/dSzYMQkijpdY7x3ovICSn0gpfphoOxadtWyhve0kug0W/ZVFz7BoAtx2i7NxXUIEUZZXVVYhVL/LgrIxY2fN+QbSJcnHfrLWOnr1+fh3EZm7jVJn/+TRtZx+MRGzxPs2581BooFFwc6r7tNsXycCzGS+/25kgCRKgeN3ncH1S81zF/lKDYI/RsLgN8km3rjw57oH2o11xwPq6bgz90d3lPvKNLsIe+Wekbw7nnuRYEbqGa2jYoaiNxc+Mfo/ZCK8KCAVQlWEkm00j6t8FLte43osibYmYYqM3dThNk/GFnb02NnAgE4shoTW65ZxonHzexb2HQlWdUPxfRWBHg1jI/D7A+nffB9iIUCDonlU="
+os:
+  - osx
