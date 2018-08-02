@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	TestOwner = "shuheiktgw"
+	TestOwner = "shuheiktgwtest"
 	TestRepo = "github-api-test"
 )
 
