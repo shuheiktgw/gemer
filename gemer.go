@@ -30,6 +30,8 @@ type UpdateVersionResult struct {
 	Branch string
 	PrNumber int
 	ReleaseID int64
+	PrURL string
+	ReleaseURL string
 }
 
 func (g *Gemer) UpdateVersion(branch, path string, version int) (*UpdateVersionResult, error) {
@@ -103,7 +105,7 @@ func (g *Gemer) UpdateVersion(branch, path string, version int) (*UpdateVersionR
 	releaseBody := nextTag + " will include commits below!\n" + ccs.String()
 	fmt.Fprintln(g.outStream, "==> Create a release")
 	release, err := g.GitHubClient.CreateRelease(nextTag, branch, "Release " + nextTag, releaseBody)
-	result = &UpdateVersionResult{Branch: newBranchName, PrNumber: *pr.Number, ReleaseID: *release.ID}
+	result = &UpdateVersionResult{Branch: newBranchName, PrNumber: *pr.Number, ReleaseID: *release.ID, PrURL: *pr.HTMLURL, ReleaseURL: *release.HTMLURL}
 
 	if err != nil {
 		return result, g.rollbackUpdateVersion(err, result)

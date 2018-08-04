@@ -118,12 +118,9 @@ func (cli *CLI)Run(args []string) int {
 		return ExitCodeError
 	}
 
-	prURL := fmt.Sprintf("https://github.com/%s/%s/pull/%d", owner, repo, result.PrNumber)
-	releaseURL := fmt.Sprintf("https://github.com/%s/%s/releases/%d", owner, repo, result.ReleaseID)
-
 	fmt.Fprintf(cli.outStream, "Now, your gem is ready to release! Remaining tasks are ...\n\n" +
 		"1. Access %s and merge the PR\n" +
-		"2. Access %s and publish the release\n", prURL, releaseURL)
+		"2. Access %s and publish the release\n", result.PrURL, result.ReleaseURL)
 
 	return ExitCodeOK
 }
