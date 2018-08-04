@@ -2,8 +2,7 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
-	"net/http"
+		"net/http"
 	"strings"
 
 	"github.com/google/go-github/github"
@@ -89,17 +88,17 @@ func (c *GitHubClient) CreateNewBranch(origin, new string) error {
 }
 
 // GetVersion gets the latest version.rb file
-func (c *GitHubClient) GetVersion(branch, path string) (string, string, error) {
+func (c *GitHubClient) GetVersion(branch, path string) (*github.RepositoryContent, error) {
 	if len(branch) == 0 {
-		return "", "", errors.New("missing Github branch name")
+		return nil, errors.New("missing Github branch name")
 	}
 
 	if len(path) == 0 {
-		return "", "", errors.New("missing Github version.rb path")
+		return nil, errors.New("missing Github version.rb path")
 	}
 
 	if !strings.HasSuffix(path, "version.rb") {
-		return "", "", errors.Errorf("invalid version file path: version file path must ends with version.rb: invalid path: %s", path)
+		return nil, errors.Errorf("invalid version file path: version file path must ends with version.rb: invalid path: %s", path)
 	}
 
 	opt := &github.RepositoryContentGetOptions{Ref: branch}
@@ -107,24 +106,14 @@ func (c *GitHubClient) GetVersion(branch, path string) (string, string, error) {
 	file, _, res, err := c.Client.Repositories.GetContents(context.TODO(), c.Owner, c.Repo, path, opt)
 
 	if err != nil {
-		return "", "", errors.Wrap(err, "failed to get version file")
+		return nil, errors.Wrap(err, "failed to get version file")
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return "", "", errors.Errorf("get version: invalid status: %s", res.Status)
+		return nil, errors.Errorf("get version: invalid status: %s", res.Status)
 	}
 
-	if *file.Encoding != "base64" {
-		return "", "", errors.Errorf("unexpected encoding: %s", *file.Encoding)
-	}
-
-	decoded, err := base64.StdEncoding.DecodeString(*file.Content)
-
-	if err != nil {
-		return "", "", errors.Wrap(err, "error occurred while decoding version.rb file")
-	}
-
-	return string(decoded), *file.SHA, nil
+	return file, nil
 }
 
 // UpdateVersion updates a version.rb file with a given content
@@ -166,21 +155,21 @@ func (c *GitHubClient) UpdateVersion(path, message, sha, branch string, content 
 
 // TODO Enable to add custom labels to PR
 // CreatePullRequest creates a new pull request
-func (c *GitHubClient) CreatePullRequest(title, head, base, body string) (int, error) {
+func (c *GitHubClient) CreatePullRequest(title, head, base, body string) (*github.PullRequest, error) {
 	if len(title) == 0 {
-		return 0, errors.New("missing Github Pull Request title")
+		return nil, errors.New("missing Github Pull Request title")
 	}
 
 	if len(head) == 0 {
-		return 0, errors.New("missing Github Pull Request head branch")
+		return nil, errors.New("missing Github Pull Request head branch")
 	}
 
 	if len(base) == 0 {
-		return 0, errors.New("missing Github Pull Request base branch")
+		return nil, errors.New("missing Github Pull Request base branch")
 	}
 
 	if len(body) == 0 {
-		return 0, errors.New("missing Github Pull Request body")
+		return nil, errors.New("missing Github Pull Request body")
 	}
 
 	opt := &github.NewPullRequest{Title: &title, Head: &head, Base: &base, Body: &body}
@@ -188,14 +177,14 @@ func (c *GitHubClient) CreatePullRequest(title, head, base, body string) (int, e
 	pr, res, err := c.Client.PullRequests.Create(context.TODO(), c.Owner, c.Repo, opt)
 
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to create a new pull request")
+		return nil, errors.Wrap(err, "failed to create a new pull request")
 	}
 
 	if res.StatusCode != http.StatusCreated {
-		return 0, errors.Errorf("create pull request: invalid status: %s", res.Status)
+		return nil, errors.Errorf("create pull request: invalid status: %s", res.Status)
 	}
 
-	return *pr.Number, nil
+	return pr, nil
 }
 
 // ClosePullRequest closes a Pull Request with a give Pull Request number
@@ -216,21 +205,21 @@ func (c *GitHubClient) ClosePullRequest(number int) error {
 }
 
 // CreateRelease creates a new release
-func (c *GitHubClient) CreateRelease(tagName, targetCommitish, name, body string) (int64, error) {
+func (c *GitHubClient) CreateRelease(tagName, targetCommitish, name, body string) (*github.RepositoryRelease, error) {
 	if len(tagName) == 0 {
-		return 0, errors.New("missing Github Release Tag Name")
+		return nil, errors.New("missing Github Release Tag Name")
 	}
 
 	if len(targetCommitish) == 0 {
-		return 0, errors.New("missing Github Release Target Commitish")
+		return nil, errors.New("missing Github Release Target Commitish")
 	}
 
 	if len(name) == 0 {
-		return 0, errors.New("missing Github Release Name")
+		return nil, errors.New("missing Github Release Name")
 	}
 
 	if len(body) == 0 {
-		return 0, errors.New("missing Github Release body")
+		return nil, errors.New("missing Github Release body")
 	}
 
 	opt := &github.RepositoryRelease{
@@ -244,14 +233,14 @@ func (c *GitHubClient) CreateRelease(tagName, targetCommitish, name, body string
 	rr, res, err := c.Client.Repositories.CreateRelease(context.TODO(), c.Owner, c.Repo, opt)
 
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to create a new release")
+		return nil, errors.Wrap(err, "failed to create a new release")
 	}
 
 	if res.StatusCode != http.StatusCreated {
-		return 0, errors.Errorf("create release: invalid status: %s", res.Status)
+		return nil, errors.Errorf("create release: invalid status: %s", res.Status)
 	}
 
-	return *rr.ID, nil
+	return rr, nil
 }
 
 // DeleteRelease deletes a release

@@ -5,9 +5,11 @@ import (
 	"strings"
 	"fmt"
 	"io"
+	"encoding/base64"
 
 	"github.com/pkg/errors"
 	"github.com/blang/semver"
+	"github.com/google/go-github/github"
 )
 
 const (
@@ -30,7 +32,6 @@ type UpdateVersionResult struct {
 	ReleaseID int64
 }
 
-// TODO: Enable to specify version from command line
 func (g *Gemer) UpdateVersion(branch, path string, version int) (*UpdateVersionResult, error) {
 	if len(branch) == 0 {
 		return nil, errors.New("missing Github branch name")
@@ -40,7 +41,13 @@ func (g *Gemer) UpdateVersion(branch, path string, version int) (*UpdateVersionR
 		return nil, errors.New("missing Github version.rb path")
 	}
 
-	content, sha, err := g.GitHubClient.GetVersion(branch, path)
+	rc, err := g.GitHubClient.GetVersion(branch, path)
+
+	if err != nil {
+		return nil, err
+	}
+
+	content, err := decodeContent(rc)
 
 	if err != nil {
 		return nil, err
@@ -70,7 +77,7 @@ func (g *Gemer) UpdateVersion(branch, path string, version int) (*UpdateVersionR
 	message := "Bumps up to " + nextV
 
 	fmt.Fprintln(g.outStream, "==> Update version.rb")
-	err = g.GitHubClient.UpdateVersion(path, message, sha, newBranchName, []byte(newContent))
+	err = g.GitHubClient.UpdateVersion(path, message, *rc.SHA, newBranchName, []byte(newContent))
 	result := &UpdateVersionResult{Branch: newBranchName}
 
 	if err != nil {
@@ -78,8 +85,8 @@ func (g *Gemer) UpdateVersion(branch, path string, version int) (*UpdateVersionR
 	}
 
 	fmt.Fprintln(g.outStream, "==> Create a new pull request")
-	prNum, err := g.GitHubClient.CreatePullRequest(message, newBranchName, branch, message)
-	result = &UpdateVersionResult{Branch: newBranchName, PrNumber: prNum}
+	pr, err := g.GitHubClient.CreatePullRequest(message, newBranchName, branch, message)
+	result = &UpdateVersionResult{Branch: newBranchName, PrNumber: *pr.Number}
 
 	if err != nil {
 		return result, g.rollbackUpdateVersion(err, result)
@@ -93,10 +100,10 @@ func (g *Gemer) UpdateVersion(branch, path string, version int) (*UpdateVersionR
 	}
 
 	nextTag := "v" + nextV
-	releaseBody := nextTag + "includes commits below!\n" + ccs.String()
+	releaseBody := nextTag + " will include commits below!\n" + ccs.String()
 	fmt.Fprintln(g.outStream, "==> Create a release")
-	releaseID, err := g.GitHubClient.CreateRelease(nextTag, branch, "Release " + nextTag, releaseBody)
-	result = &UpdateVersionResult{Branch: newBranchName, PrNumber: prNum, ReleaseID: releaseID}
+	release, err := g.GitHubClient.CreateRelease(nextTag, branch, "Release " + nextTag, releaseBody)
+	result = &UpdateVersionResult{Branch: newBranchName, PrNumber: *pr.Number, ReleaseID: *release.ID}
 
 	if err != nil {
 		return result, g.rollbackUpdateVersion(err, result)
@@ -125,6 +132,20 @@ func (g *Gemer) rollbackUpdateVersion(err error, ur *UpdateVersionResult) error 
 	}
 
 	return err
+}
+
+func decodeContent(rc *github.RepositoryContent) (string, error) {
+	if *rc.Encoding != "base64" {
+		return "", errors.Errorf("unexpected encoding: %s", *rc.Encoding)
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(*rc.Content)
+
+	if err != nil {
+		return "", errors.Wrap(err, "error occurred while decoding version.rb file")
+	}
+
+	return string(decoded), nil
 }
 
 func extractVersion(c string) string {

@@ -109,7 +109,7 @@ func TestGetVersionFail(t *testing.T) {
 	for i, tc := range cases {
 		c := testGitHubClient(t)
 
-		_, _ , err := c.GetVersion(tc.branch, tc.path)
+		_ , err := c.GetVersion(tc.branch, tc.path)
 
 		if err == nil {
 			t.Fatalf("#%d GetVersion: error is not supposed to be nil", i)
@@ -128,7 +128,7 @@ func TestGetVersionSuccess(t *testing.T) {
 	for i, tc := range cases {
 		c := testGitHubClient(t)
 
-		_, _, err := c.GetVersion(tc.branch, tc.path)
+		_, err := c.GetVersion(tc.branch, tc.path)
 
 		if err != nil {
 			t.Fatalf("#%d GetVersion failed: %s", i, err)
@@ -152,13 +152,13 @@ func TestUpdateVersionSuccess(t *testing.T) {
 			t.Fatalf("#%d CreateNewBranch failed: %s", i, err)
 		}
 
-		_, sha, err := c.GetVersion("test", tc.path)
+		content, err := c.GetVersion("test", tc.path)
 
 		if err != nil {
 			t.Fatalf("#%d GetVersion failed: %s", i, err)
 		}
 
-		if err := c.UpdateVersion(tc.path, tc.message, sha, "test", tc.content); err != nil {
+		if err := c.UpdateVersion(tc.path, tc.message, *content.SHA, "test", tc.content); err != nil {
 			t.Fatalf("#%d UpdateVersion failed: %s", i, err)
 		}
 
@@ -186,8 +186,8 @@ func TestCreatePullRequestFail(t *testing.T) {
 	for i, tc := range cases {
 		c := testGitHubClient(t)
 
-		if n, err := c.CreatePullRequest(tc.title, tc.head, tc.base, tc.body); err == nil {
-			if e := c.ClosePullRequest(n); e != nil {
+		if pr, err := c.CreatePullRequest(tc.title, tc.head, tc.base, tc.body); err == nil {
+			if e := c.ClosePullRequest(*pr.Number); e != nil {
 				t.Errorf("%d ClosePullRequest failed: might need to close a PR manually: %s", i, e)
 			}
 			t.Fatalf("#%d CreatePullRequest is supposed to fail", i)
@@ -206,13 +206,13 @@ func TestCreatePullRequestSuccess(t *testing.T) {
 	for i, tc := range cases {
 		c := testGitHubClient(t)
 
-		n, err := c.CreatePullRequest(tc.title, tc.head, tc.base, tc.body)
+		pr, err := c.CreatePullRequest(tc.title, tc.head, tc.base, tc.body)
 
 		if err != nil {
 			t.Fatalf("#%d CreatePullRequest failed: %s", i, err)
 		}
 
-		if e := c.ClosePullRequest(n); e != nil {
+		if e := c.ClosePullRequest(*pr.Number); e != nil {
 			t.Errorf("%d ClosePullRequest failed: might need to close a PR manually: %s", i, e)
 		}
 	}
@@ -256,13 +256,13 @@ func TestCreateReleaseSuccess(t *testing.T) {
 	for i, tc := range cases {
 		c := testGitHubClient(t)
 
-		id, err := c.CreateRelease(tc.tagName, tc.targetCommitish, tc.name, tc.body)
+		rr, err := c.CreateRelease(tc.tagName, tc.targetCommitish, tc.name, tc.body)
 
 		if err != nil {
 			t.Fatalf("#%d CreateRelease failed: %s", i, err)
 		}
 
-		if e := c.DeleteRelease(id); e != nil {
+		if e := c.DeleteRelease(*rr.ID); e != nil {
 			t.Errorf("%d DeleteRelease failed: might need to delete a Release manually: %s", i, e)
 		}
 	}
