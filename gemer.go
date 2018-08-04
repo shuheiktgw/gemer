@@ -3,6 +3,8 @@ package main
 import (
 	"regexp"
 	"strings"
+	"fmt"
+	"io"
 
 	"github.com/pkg/errors"
 	"github.com/blang/semver"
@@ -19,6 +21,7 @@ var versionRegex = regexp.MustCompile(`VERSION\s*=\s*['"](\d+\.\d+\.\d+)['"]`)
 // Gemer wraps GithubClient and simplifies interactions with GitHub API
 type Gemer struct {
 	GitHubClient *GitHubClient
+	outStream io.Writer
 }
 
 type UpdateVersionResult struct {
@@ -56,7 +59,7 @@ func (g *Gemer) UpdateVersion(branch, path string, version int) (*UpdateVersionR
 	}
 
 	newBranchName := "bumps_up_to_" + nextV
-
+	fmt.Fprintln(g.outStream, "==> Create a new branch")
 	err = g.GitHubClient.CreateNewBranch(branch, newBranchName)
 
 	if err != nil {
@@ -66,6 +69,7 @@ func (g *Gemer) UpdateVersion(branch, path string, version int) (*UpdateVersionR
 	newContent := strings.Replace(content, currentV, nextV, 1)
 	message := "Bumps up to " + nextV
 
+	fmt.Fprintln(g.outStream, "==> Update version.rb")
 	err = g.GitHubClient.UpdateVersion(path, message, sha, newBranchName, []byte(newContent))
 	result := &UpdateVersionResult{Branch: newBranchName}
 
@@ -73,6 +77,7 @@ func (g *Gemer) UpdateVersion(branch, path string, version int) (*UpdateVersionR
 		return result, g.rollbackUpdateVersion(err, result)
 	}
 
+	fmt.Fprintln(g.outStream, "==> Create a new pull request")
 	prNum, err := g.GitHubClient.CreatePullRequest(message, newBranchName, branch, message)
 	result = &UpdateVersionResult{Branch: newBranchName, PrNumber: prNum}
 
@@ -89,6 +94,7 @@ func (g *Gemer) UpdateVersion(branch, path string, version int) (*UpdateVersionR
 
 	nextTag := "v" + nextV
 	releaseBody := nextTag + "includes commits below!\n" + ccs.String()
+	fmt.Fprintln(g.outStream, "==> Create a release")
 	releaseID, err := g.GitHubClient.CreateRelease(nextTag, branch, "Release " + nextTag, releaseBody)
 	result = &UpdateVersionResult{Branch: newBranchName, PrNumber: prNum, ReleaseID: releaseID}
 

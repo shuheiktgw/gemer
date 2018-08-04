@@ -110,7 +110,7 @@ func (cli *CLI)Run(args []string) int {
 		return ExitCodeError
 	}
 
-	gemer := Gemer{GitHubClient: client}
+	gemer := Gemer{GitHubClient: client, outStream: cli.outStream}
 
 	result, err := gemer.UpdateVersion(branch, path, ver)
 	if err != nil {

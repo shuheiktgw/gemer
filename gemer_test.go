@@ -3,11 +3,12 @@ package main
 import (
 	"testing"
 	"fmt"
+	"bytes"
 )
 
 func testGemmer(t *testing.T) *Gemer {
 	c := testGitHubClient(t)
-	return &Gemer{GitHubClient: c}
+	return &Gemer{GitHubClient: c, outStream: new(bytes.Buffer)}
 }
 
 func TestGemerUpdateVersionSuccess(t *testing.T) {

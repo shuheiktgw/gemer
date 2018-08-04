@@ -2,7 +2,7 @@ package main
 
 import (
 	"testing"
-		"bytes"
+	"bytes"
 	"strings"
 	"fmt"
 )
