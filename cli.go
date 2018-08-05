@@ -5,6 +5,7 @@ import (
 	"flag"
 	"os"
 	"fmt"
+	"strings"
 )
 
 const EnvGitHubToken = "GITHUB_TOKEN"
@@ -80,9 +81,7 @@ func (cli *CLI)Run(args []string) int {
 	}
 
 	if len(path) == 0 {
-		fmt.Fprintf(cli.errStream, "Failed to set up gemer: version.rb path is missing\n" +
-			"Please set it via `-p` option\n\n")
-		return ExitCodeInvalidFlagError
+		path = fmt.Sprintf("lib/%s/version.rb", strings.ToLower(repo))
 	}
 
 	if len(token) == 0 {

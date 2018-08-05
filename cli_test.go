@@ -20,7 +20,6 @@ func TestCliRunFail(t *testing.T) {
 	}{
 		{command: "gemer -repository testRepo -branch testBranch -path test/path", expectedErrorCode: ExitCodeInvalidFlagError},
 		{command: "gemer -username testUser -branch testBranch -path test/path", expectedErrorCode: ExitCodeInvalidFlagError},
-		{command: "gemer -username testUser -repository testRepo", expectedErrorCode: ExitCodeInvalidFlagError},
 	}
 
 	for i, tc := range cases {
