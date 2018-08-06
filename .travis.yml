@@ -8,4 +8,4 @@ env:
 os:
   - osx
 after_success:
-  - test $TRAVIS_BRANCH = "master" && go get github.com/mitchellh/gox && go get github.com/tcnksm/ghr && gox -output "dist/{{.OS}}_{{.Arch}}_{{.Dir}}" && ghr --token $GHR_GITHUB_TOKEN --replace `grep 'Version =' version.go | sed -E 's/.*"(.+)"$$/\1/'` dist/
+  - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false" && go get github.com/mitchellh/gox && go get github.com/tcnksm/ghr && gox -output "dist/{{.OS}}_{{.Arch}}_{{.Dir}}" && ghr --token $GHR_GITHUB_TOKEN --replace `grep 'Version =' version.go | sed -E 's/.*"(.+)"$$/\1/'` dist/
