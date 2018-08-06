@@ -61,6 +61,7 @@ $ gemer \
     -b or -branch \       # Set a GitHub branch name your release is based on, default is master
     -p or -path \         # Set a path to version.rb file in your gem, default is lib/[repo name]/version.rb
     -v or -version \      # Return a current version of gemer
+    -d or -dry-run \      # Return a current version of gemer
     -major \              # Increments a major version of your gem
     -minor \              # Increments a minor version of your gem
     -patch \              # Increments a patch version of your gem (default)
