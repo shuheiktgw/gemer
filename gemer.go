@@ -35,14 +35,6 @@ type UpdateVersionResult struct {
 }
 
 func (g *Gemer) UpdateVersion(branch, path string, version int) (*UpdateVersionResult, error) {
-	if len(branch) == 0 {
-		return nil, errors.New("missing Github branch name")
-	}
-
-	if len(path) == 0 {
-		return nil, errors.New("missing Github version.rb path")
-	}
-
 	rc, err := g.GitHubClient.GetVersion(branch, path)
 
 	if err != nil {
@@ -112,6 +104,43 @@ func (g *Gemer) UpdateVersion(branch, path string, version int) (*UpdateVersionR
 	}
 
 	return result, nil
+}
+
+func(g *Gemer) DryUpdateVersion(branch, path string, version int) error {
+	rc, err := g.GitHubClient.GetVersion(branch, path)
+
+	if err != nil {
+		return err
+	}
+
+	content, err := decodeContent(rc)
+
+	if err != nil {
+		return err
+	}
+
+	currentV := extractVersion(content)
+
+	if len(currentV) == 0 {
+		return errors.Errorf("failed to extract version from version.rb: version.rb content: %s", content)
+	}
+
+	nextV, err := convertToNext(currentV, version)
+
+	if err != nil {
+		return err
+	}
+
+	currentTag := "v" + currentV
+	ccs, err := g.GitHubClient.CompareCommits(currentTag, branch)
+
+	fmt.Fprintf(g.outStream, "==> Create a branch named `bumps_up_to_%s`\n", nextV)
+	fmt.Fprintf(g.outStream, "==> Update `Version` constant of the branch from `%s` to `%s`\n", currentV, nextV)
+	fmt.Fprintf(g.outStream, "==> Create a pull request from `bumps_up_to_%s` branch to `%s` branch\n", nextV, branch)
+	fmt.Fprintf(g.outStream, "==> Draft a release which contains the following commits\n\n")
+	fmt.Fprintln(g.outStream, ccs)
+
+	return nil
 }
 
 func (g *Gemer) rollbackUpdateVersion(err error, ur *UpdateVersionResult) error {

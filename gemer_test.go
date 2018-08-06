@@ -3,12 +3,12 @@ package main
 import (
 	"testing"
 	"fmt"
-	"bytes"
+	"io/ioutil"
 )
 
 func testGemmer(t *testing.T) *Gemer {
 	c := testGitHubClient(t)
-	return &Gemer{GitHubClient: c, outStream: new(bytes.Buffer)}
+	return &Gemer{GitHubClient: c, outStream: ioutil.Discard}
 }
 
 func TestGemerUpdateVersionSuccess(t *testing.T) {
@@ -37,8 +37,6 @@ func TestGemerUpdateVersionFail(t *testing.T) {
 	cases := []struct {
 		branch, path string
 	}{
-		{branch: "", path: fmt.Sprintf("lib/%s/version.rb", TestRepo)},
-		{branch: "develop", path: ""},
 		{branch: "unknown", path: fmt.Sprintf("lib/%s/version.rb", TestRepo)},
 		{branch: "develop", path: "unknown/version.rb"},
 	}
@@ -47,6 +45,45 @@ func TestGemerUpdateVersionFail(t *testing.T) {
 		g := testGemmer(t)
 
 		_, err := g.UpdateVersion(tc.branch, tc.path, PatchVersion)
+
+		if err == nil {
+			t.Fatalf("#%d error is not supposed to be nil", i)
+		}
+	}
+}
+
+func TestGemerDryUpdateVersionSuccess(t *testing.T) {
+	cases := []struct {
+		version int
+	}{
+		{version: PatchVersion},
+		{version: MinorVersion},
+		{version: MajorVersion},
+	}
+
+	for i, tc := range cases {
+		g := testGemmer(t)
+
+		err := g.DryUpdateVersion("develop", fmt.Sprintf("lib/%s/version.rb", TestRepo), tc.version)
+
+		if err != nil {
+			t.Fatalf("#%d error occurred while dry updating version: %s", i, err)
+		}
+	}
+}
+
+func TestGemerDryUpdateVersionFail(t *testing.T) {
+	cases := []struct {
+		branch, path string
+	}{
+		{branch: "unknown", path: fmt.Sprintf("lib/%s/version.rb", TestRepo)},
+		{branch: "develop", path: "unknown/version.rb"},
+	}
+
+	for i, tc := range cases {
+		g := testGemmer(t)
+
+		err := g.DryUpdateVersion(tc.branch, tc.path, PatchVersion)
 
 		if err == nil {
 			t.Fatalf("#%d error is not supposed to be nil", i)

@@ -32,6 +32,25 @@ func TestCliRunFail(t *testing.T) {
 	}
 }
 
+func TestCliRun_dryRunFlag(t *testing.T) {
+	cases := []struct {
+		command string
+		expectedErrorCode int
+	}{
+		{command: fmt.Sprintf("gemer -username %s -repository %s -branch %s -d", TestOwner, TestRepo, "master"), expectedErrorCode: ExitCodeOK},
+		{command: fmt.Sprintf("gemer -username %s -repository %s -branch %s -dry-run", TestOwner, TestRepo, "master"), expectedErrorCode: ExitCodeOK},
+	}
+
+	for i, tc := range cases {
+		cli, _, _ := testCli()
+		args := strings.Split(tc.command, " ")
+
+		if got := cli.Run(args); got != tc.expectedErrorCode {
+			t.Fatalf("#%d %q exits with %d, want %d", i, tc.command, got, tc.expectedErrorCode)
+		}
+	}
+}
+
 func TestCliRun_versionFlag(t *testing.T) {
 	command := "gemer -version"
 

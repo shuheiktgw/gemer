@@ -29,6 +29,7 @@ func (cli *CLI)Run(args []string) int {
 		path string
 		token string
 		version bool
+		dryRun bool
 		patch bool
 		minor bool
 		major bool
@@ -54,6 +55,9 @@ func (cli *CLI)Run(args []string) int {
 
 	flags.BoolVar(&version, "version", false, "a long option to show the current version of gemer")
 	flags.BoolVar(&version, "v", false, "a short option to show the current version of gemer")
+
+	flags.BoolVar(&dryRun, "dry-run", false, "a long option for dry run")
+	flags.BoolVar(&dryRun, "d", false, "a short option for dry run")
 
 	flags.BoolVar(&major, "major", false, "an option to increment major version")
 	flags.BoolVar(&minor, "minor", false, "an option to increment minor version")
@@ -110,6 +114,16 @@ func (cli *CLI)Run(args []string) int {
 	}
 
 	gemer := Gemer{GitHubClient: client, outStream: cli.outStream}
+
+	if dryRun {
+		err := gemer.DryUpdateVersion(branch, path, ver)
+		if err != nil {
+			fmt.Fprintf(cli.errStream, "Failed to update version with dry-run option: %s\n", err)
+			return ExitCodeError
+		}
+
+		return ExitCodeOK
+	}
 
 	result, err := gemer.UpdateVersion(branch, path, ver)
 	if err != nil {
