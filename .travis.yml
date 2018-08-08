@@ -7,5 +7,12 @@ env:
     - secure: "U7gVvBt4CEUWglw1nMswdncjAJerDA3jk9SmbDK2xQdNJbP6qUlIkws3WuuL6q7c3zlbm4ZmPBioz8isZIHp7fEZ1AnG/zJ/l/tf9d6I9Q/8FI/ITXCYp+l883EIrXup5apHcVwvi86SL/cEo4OiTzs3gYUJz7DyX0YY66cZc82yY0BwyHIhbgsCk8eIx6fjV7Qnb/zj6zHkcUoUdyLF6HVe9YG+Iy4uuFUNVnveAFZdBK93T9PVylbR1L0x8R9WkzhdMLUkyGyiVDs1co0kuzVKFAAMu7p6E98lR7MqV0Af9GrvPhGpOcdEMNtYGs8G4REkavT0q+0YuwvlV0+wzWIxUP1POBT8kksMB2OXKefkA59oJpeEBLEO+nGSP2F2nIATHZkM9MXS4Ip/B6ICqQj+lmPze3CriMuWBU9ASGqRo52SNNKLwoXeawEj0h3CalhLiJLJq45tbUShKwRoTUAaaLCyXl3qdVE1K8iciZ39xQkbvC74oVBzO3HfBK1wFZgweoLFddJUtMFfQht3g0u8mF7SRfZtK4K1akscw8UhelYGDsTgJ8a6333aToZm0qZ/9pQk0ilAKH1YDwacO6qLh3alVMfU6Rf84G6DgHwo1a5Csbb7cxTV+ljZYt4XX7epY6abUHE/HX3g2F63HASyUBlC6iHj1P8g7V4jDOc="
 os:
   - osx
-after_success:
-  - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false" && go get github.com/mitchellh/gox && go get github.com/tcnksm/ghr && gox -output "dist/{{.OS}}_{{.Arch}}_{{.Dir}}" && ghr --token $GHR_GITHUB_TOKEN --replace `grep 'Version =' version.go | sed -E 's/.*"(.+)"$$/\1/'` dist/
+before_deploy:
+  - go get github.com/Songmu/goxz/cmd/goxz
+  - go get github.com/tcnksm/ghr
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: chmod +x deploy.sh && sh deploy.sh
+  on:
+    branch: master
