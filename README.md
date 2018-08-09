@@ -49,6 +49,23 @@ gemer -t="Your GitHub personal access token" [Other Options]
 gemer -username='shuheiktgw' -repository='some-gem' -path='lib/github-api-test/version.rb'
 ```
 
+## Install
+
+If you are MacOS user, you can use [Homebrew](http://brew.sh/):
+
+```bash
+$ brew tap shuheiktgw/gemer
+$ brew install gemer
+```
+
+If you use another OS, you can download a suitable binary from [release page](https://github.com/shuheiktgw/gemer/releases) and place it in `$PATH` directory.
+
+Alternatively, if you are Golang programmer, you can use `go get`:
+
+```bash
+$ go get -u github.com/shuheiktgw/gemer
+```
+
 ## Options
 
 You can set these options below:
@@ -61,7 +78,7 @@ $ gemer \
     -b or -branch \       # Set a GitHub branch name your release is based on, default is master
     -p or -path \         # Set a path to version.rb file in your gem, default is lib/[repo name]/version.rb
     -v or -version \      # Return a current version of gemer
-    -d or -dry-run \      # Return a current version of gemer
+    -d or -dry-run \      # Dry run gemer with a given options
     -major \              # Increments a major version of your gem
     -minor \              # Increments a minor version of your gem
     -patch \              # Increments a patch version of your gem (default)
